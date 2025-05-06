@@ -1,0 +1,44 @@
+import { prisma } from '@/lib/prisma';
+import { notFound } from 'next/navigation';
+
+type PenPageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function PenPage({ params }: PenPageProps) {
+  const { id } = await params;
+  const pen = await prisma.pen.findUnique({
+    where: { id: parseInt(id) },
+  });
+
+  if (!pen) return notFound();
+
+  const fullHTML = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <style>${pen.css}</style>
+    </head>
+    <body>
+      ${pen.html}
+      <script>
+        ${pen.js}
+      </script>
+    </body>
+    </html>
+  `;
+
+  return (
+    <main className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Preview of Pen #{pen.id}</h1>
+
+      <div className="border rounded overflow-hidden h-[600px]">
+        <iframe
+          srcDoc={fullHTML}
+          className="w-full h-full"
+          sandbox="allow-scripts allow-same-origin"
+        />
+      </div>
+    </main>
+  );
+}

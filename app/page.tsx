@@ -1,103 +1,77 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import Editor from '@monaco-editor/react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+export default function HomePage() {
+  const [html, setHtml] = useState('<h1>Hello World</h1>');
+  const [css, setCss] = useState('h1 { color: red; }');
+  const [js, setJs] = useState('console.log("Hello JS");');
+  const [previewHtml, setPreviewHtml] = useState('');
+  const router = useRouter();
+
+  const generateFullHTML = () => `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <style>${css}</style>
+    </head>
+    <body>
+      ${html}
+      <script>${js}</script>
+    </body>
+    </html>
+  `;
+
+  async function handleSave() {
+    const res = await fetch('/api/pens', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ html, css, js }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      router.push(`/pen/${data.id}`);
+    } else {
+      alert(data.message || 'Failed to save');
+    }
+  }
+
+  function handleRun() {
+    setPreviewHtml(generateFullHTML());
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="p-6 space-y-4">
+      <h1 className="text-2xl font-bold">Create a New Pen</h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <div className="grid md:grid-cols-3 gap-4">
+        <div>
+          <p className="font-medium mb-1">HTML</p>
+          <Editor height="200px" defaultLanguage="html" value={html} onChange={(v) => setHtml(v || '')} theme="vs-dark" />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        <div>
+          <p className="font-medium mb-1">CSS</p>
+          <Editor height="200px" defaultLanguage="css" value={css} onChange={(v) => setCss(v || '')} theme="vs-dark" />
+        </div>
+        <div>
+          <p className="font-medium mb-1">JS</p>
+          <Editor height="200px" defaultLanguage="javascript" value={js} onChange={(v) => setJs(v || '')} theme="vs-dark" />
+        </div>
+      </div>
+
+      <div className="flex gap-4">
+        <button onClick={handleRun} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Run</button>
+        <button onClick={handleSave} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Save Pen</button>
+      </div>
+
+      {previewHtml && (
+        <div className="mt-4 border rounded overflow-hidden h-[500px]">
+          <iframe srcDoc={previewHtml} className="w-full h-full" sandbox="allow-scripts allow-same-origin" />
+        </div>
+      )}
+    </main>
   );
 }
