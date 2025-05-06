@@ -1,3 +1,4 @@
+import EmbedCodeBlock from '@/components/EmbedCodeBlock';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 
@@ -46,11 +47,7 @@ export default async function EmbedPage({ params }: EmbedPageProps) {
 
       <div>
         <p className="font-medium">Embed Code:</p>
-        <textarea
-          readOnly
-          value={embedCode}
-          className="w-full p-4 bg-gray-800 text-white rounded mt-2"
-        />
+        <EmbedCodeBlock code={embedCode} />
       </div>
     </main>
   );
