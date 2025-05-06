@@ -1,16 +1,27 @@
 import { prisma } from '@/lib/prisma';
+import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
-  const { html, css, js } = await req.json();
+  const session = await getServerSession();
+  const userId = session?.user?.email;
+
+  const body = await req.json();
+  const { html, css, js, isPublic = true } = body;
 
   if (!html || !css || !js) {
-    return NextResponse.json({ message: 'Missing HTML, CSS, or JS' }, { status: 400 });
+    return NextResponse.json({ message: 'Missing fields' }, { status: 400 });
   }
 
   try {
     const pen = await prisma.pen.create({
-      data: { html, css, js },
+      data: { 
+        html, 
+        css, 
+        js,
+        isPublic,
+        userId: userId || null, // Use userId if available, otherwise set to null
+      },
     });
 
     return NextResponse.json({ id: pen.id });
