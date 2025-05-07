@@ -3,11 +3,12 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import PenPageWrapper from './PenPageWrapper';
 
-type PenPageProps = { params: { id: string } };
+type PenPageProps = { params: Promise<{ id: string }> };
 
 export default async function PenPage({ params }: PenPageProps) {
-  const id = parseInt(params.id, 10);
-  const pen = await prisma.pen.findUnique({ where: { id } });
+  const { id } = await params;
+  const numericId = parseInt(id, 10);
+  const pen = await prisma.pen.findUnique({ where: { id: numericId } });
   if (!pen) return notFound();
 
   const fullHTML = `
